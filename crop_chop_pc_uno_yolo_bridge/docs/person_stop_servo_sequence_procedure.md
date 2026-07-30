@@ -102,6 +102,7 @@ http://192.168.4.1/stream
 
 When no person is detected:
 
+- the PC enables torque first with `SERVO_TORQUE <id> 1`,
 - the PC sends sequential `SERVO_MOVE_SAFE ...` commands,
 - the UNO remains armed,
 - the sequence continues through the configured servo IDs and positions.
@@ -149,3 +150,46 @@ Report the result as four separate evidence layers:
 - physical outcome: observed servo movement or stop.
 
 Do not claim a successful person-stop event unless the log shows `event=stop_person_detected` and physical motion stopped during the test.
+
+## If Servos Do Not Move
+
+Check the terminal output from `yolo_uno_bridge.py`.
+
+The bridge should print startup commands and UNO responses such as:
+
+```text
+>> ARM_LOGIC
+<< ACK command=ARM_LOGIC
+>> SERVO_TORQUE 1 1
+<< SERVO_TORQUE id=1 enable=1 ok=1
+>> SERVO_MOVE_SAFE 1 1900 100
+<< SERVO_MOVE_SAFE id=1 position=1900 speed=100 ok=1
+```
+
+Interpretation:
+
+- If `SERVO_TORQUE ... ok=0`, the UNO is not communicating with that servo ID.
+- If `SERVO_MOVE_SAFE ... ok=0`, the servo command was sent but the bus did not acknowledge it.
+- If no `SERVO_MOVE_SAFE` commands appear, the camera probably detected `person` immediately and stopped before movement.
+- If commands show `ok=1` but there is no movement, check servo power, torque state, mechanical binding and whether the target position is too close to the current position.
+
+For a movement-only bench check, keep people out of frame or temporarily use a non-person stop class:
+
+```bash
+MPLCONFIGDIR=/tmp .venv/bin/python pc_tools/yolo_uno_bridge.py \
+  --port /dev/ttyUSB0 \
+  --source 0 \
+  --model yolov8n.pt \
+  --imgsz 320 \
+  --conf 0.25 \
+  --servo-sequence \
+  --servo-ids 1,2,3 \
+  --servo-positions 1900,2048,2200 \
+  --servo-speed 100 \
+  --servo-step-interval 1.5 \
+  --stop-class zebra \
+  --log-jsonl runs/servo_motion_debug.jsonl \
+  --log-csv runs/servo_motion_debug.csv
+```
+
+Use `--stop-class person` again for the actual safety test.

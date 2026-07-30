@@ -88,6 +88,17 @@ def read_available(connection):
     return responses
 
 
+def send_command(connection, line, wait_s=0.05):
+    print(f">> {line}")
+    send_line(connection, line)
+    if wait_s > 0:
+        time.sleep(wait_s)
+    responses = read_available(connection)
+    for response in responses:
+        print(f"<< {response}")
+    return responses
+
+
 def parse_int_list(text, name):
     try:
         values = [int(value.strip()) for value in text.split(",") if value.strip()]
@@ -114,6 +125,7 @@ def parse_args():
     parser.add_argument("--servo-positions", default=DEFAULT_SERVO_POSITIONS, help="Comma-separated safe positions for each servo step.")
     parser.add_argument("--servo-speed", type=int, default=100)
     parser.add_argument("--servo-step-interval", type=float, default=1.5)
+    parser.add_argument("--skip-servo-torque-enable", action="store_true")
     parser.add_argument("--stop-class", default=STOP_CLASS)
     parser.add_argument("--no-display", action="store_true")
     parser.add_argument("--duration", type=float, default=0.0)
@@ -185,10 +197,13 @@ def main():
 
     with serial.Serial(port, args.baud, timeout=0.1) as connection:
         time.sleep(2.0)
-        send_line(connection, "HELLO")
-        send_line(connection, f"SET_THRESHOLD {args.uno_threshold:.3f}")
+        send_command(connection, "HELLO")
+        send_command(connection, f"SET_THRESHOLD {args.uno_threshold:.3f}")
         should_arm = args.arm or args.servo_sequence
-        send_line(connection, "ARM_LOGIC" if should_arm else "DISARM_LOGIC")
+        send_command(connection, "ARM_LOGIC" if should_arm else "DISARM_LOGIC")
+        if args.servo_sequence and not args.skip_servo_torque_enable:
+            for servo_id in servo_ids:
+                send_command(connection, f"SERVO_TORQUE {servo_id} 1", wait_s=0.1)
 
         try:
             while True:
@@ -206,22 +221,22 @@ def main():
                 stop_detected = has_stop_detection(detections, args.stop_class)
                 event = "detection"
                 if stop_detected and not sequence_stopped:
-                    send_line(connection, command)
+                    send_command(connection, command)
                     for servo_id in servo_ids:
-                        send_line(connection, f"SERVO_TORQUE {servo_id} 0")
-                    send_line(connection, "DISARM_LOGIC")
+                        send_command(connection, f"SERVO_TORQUE {servo_id} 0", wait_s=0.1)
+                    send_command(connection, "DISARM_LOGIC")
                     sequence_stopped = True
                     event = "stop_person_detected"
                 elif args.servo_sequence and not sequence_stopped and now - last_servo_step >= args.servo_step_interval:
                     command = next_servo_command(servo_ids, servo_positions, args.servo_speed, servo_step_index)
-                    send_line(connection, command)
+                    send_command(connection, command, wait_s=0.1)
                     servo_step_index += 1
                     last_servo_step = now
                     event = "servo_step"
 
                 responses = read_available(connection)
                 if not args.servo_sequence and now - last_send >= send_interval:
-                    send_line(connection, command)
+                    send_command(connection, command, wait_s=0.0)
                     last_send = now
 
                 best_detection = detections[0] if detections else {}
@@ -257,7 +272,10 @@ def main():
                 if args.duration and now - started >= args.duration:
                     break
         finally:
-            send_line(connection, "DISARM_LOGIC")
+            if args.servo_sequence:
+                for servo_id in servo_ids:
+                    send_command(connection, f"SERVO_TORQUE {servo_id} 0", wait_s=0.1)
+            send_command(connection, "DISARM_LOGIC")
             capture.release()
             if json_log:
                 json_log.close()
