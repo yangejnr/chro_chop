@@ -1,7 +1,8 @@
 const unsigned long BAUD_RATE = 115200;
-const char *FIRMWARE_VERSION = "0.2.0";
+const char *FIRMWARE_VERSION = "0.3.0";
 const size_t LINE_BUFFER_SIZE = 96;
 const unsigned long DANGER_BLINK_INTERVAL_MS = 250;
+const unsigned long SERIAL_STATUS_INTERVAL_MS = 1000;
 
 const byte XIAO_D1_INPUT_PIN = 9;
 const byte XIAO_D2_INPUT_PIN = 8;
@@ -23,10 +24,32 @@ float lastWidth = 0.0;
 float lastHeight = 0.0;
 unsigned long lastBlinkMs = 0;
 bool redBlinkState = false;
+unsigned long lastSerialStatusMs = 0;
 
 void sendReady() {
   Serial.print("UNO_READY firmware=");
   Serial.println(FIRMWARE_VERSION);
+}
+
+void sendStartupReport() {
+  Serial.println("BEGIN_UNO_WIRING_TEST");
+  Serial.println("project=Crop Chop PC YOLO to UNO Bridge");
+  Serial.print("firmware=");
+  Serial.println(FIRMWARE_VERSION);
+  Serial.print("baud=");
+  Serial.println(BAUD_RATE);
+  Serial.print("xiao_d1_input_pin=");
+  Serial.println(XIAO_D1_INPUT_PIN);
+  Serial.print("xiao_d2_input_pin=");
+  Serial.println(XIAO_D2_INPUT_PIN);
+  Serial.print("green_safe_led_pin=");
+  Serial.println(GREEN_SAFE_LED_PIN);
+  Serial.print("yellow_danger_led_pin=");
+  Serial.println(YELLOW_DANGER_LED_PIN);
+  Serial.print("red_power_danger_led_pin=");
+  Serial.println(RED_POWER_DANGER_LED_PIN);
+  Serial.println("commands=HELLO,PING,STATUS,ARM_LOGIC,DISARM_LOGIC,NO_DETECTION,SET_THRESHOLD,DETECTION");
+  Serial.println("END_UNO_WIRING_TEST");
 }
 
 void sendAck(const char *command) {
@@ -78,6 +101,32 @@ void sendStatus() {
   Serial.print(" last_label=");
   Serial.print(lastLabel);
   Serial.print(" last_confidence=");
+  Serial.print(lastConfidence, 3);
+  Serial.print(" threshold=");
+  Serial.print(confidenceThreshold, 3);
+  Serial.print(" decision=");
+  Serial.println(currentDecision());
+}
+
+void sendTestStatus() {
+  updateStatusLeds();
+  Serial.print("TEST_STATUS uptime_ms=");
+  Serial.print(millis());
+  Serial.print(" armed=");
+  Serial.print(logicArmed ? 1 : 0);
+  Serial.print(" xiao_d1=");
+  Serial.print(digitalRead(XIAO_D1_INPUT_PIN));
+  Serial.print(" xiao_d2=");
+  Serial.print(digitalRead(XIAO_D2_INPUT_PIN));
+  Serial.print(" green=");
+  Serial.print(digitalRead(GREEN_SAFE_LED_PIN));
+  Serial.print(" yellow=");
+  Serial.print(digitalRead(YELLOW_DANGER_LED_PIN));
+  Serial.print(" red=");
+  Serial.print(digitalRead(RED_POWER_DANGER_LED_PIN));
+  Serial.print(" detections=");
+  Serial.print(detectionCount);
+  Serial.print(" confidence=");
   Serial.print(lastConfidence, 3);
   Serial.print(" threshold=");
   Serial.print(confidenceThreshold, 3);
@@ -211,9 +260,15 @@ void setup() {
   clearDetection();
   updateStatusLeds();
   sendReady();
+  sendStartupReport();
+  sendStatus();
 }
 
 void loop() {
   readSerialLine();
   updateStatusLeds();
+  if (millis() - lastSerialStatusMs >= SERIAL_STATUS_INTERVAL_MS) {
+    lastSerialStatusMs = millis();
+    sendTestStatus();
+  }
 }

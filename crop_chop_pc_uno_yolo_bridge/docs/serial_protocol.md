@@ -32,10 +32,11 @@ Field meanings:
 ## Responses From UNO To PC
 
 ```text
-UNO_READY firmware=0.2.0
+UNO_READY firmware=0.3.0
 PONG uptime_ms=<integer>
 ACK command=<name>
 STATUS armed=<0|1> xiao_d1=<0|1> xiao_d2=<0|1> detections=<integer> last_label=<label> last_confidence=<float> decision=<SAFE|DANGER>
+TEST_STATUS uptime_ms=<integer> armed=<0|1> xiao_d1=<0|1> xiao_d2=<0|1> green=<0|1> yellow=<0|1> red=<0|1> detections=<integer> confidence=<float> threshold=<float> decision=<SAFE|DANGER>
 ERROR code=<name>
 ```
 

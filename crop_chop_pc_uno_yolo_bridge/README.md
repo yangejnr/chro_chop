@@ -43,10 +43,56 @@ The XIAO signal lines are monitored on UNO pins `9` and `8`.
 Or upload with PlatformIO from this directory:
 
 ```bash
-env PLATFORMIO_CORE_DIR=/home/henry/crop-chop/crop_chop_xiao_camera_test/.pio_core ../crop_chop_xiao_camera_test/.venv/bin/pio run --target upload --upload-port /dev/ttyACM0
+env PLATFORMIO_CORE_DIR=/home/henry/crop-chop/crop_chop_xiao_camera_test/.pio_core ../crop_chop_xiao_camera_test/.venv/bin/pio run --target upload --upload-port /dev/ttyUSB0
 ```
 
-Use `/dev/ttyUSB0` instead if the UNO clone appears as a USB-serial adapter.
+Use `/dev/ttyACM0` instead if the UNO appears as an Arduino USB CDC device. This project passes avrdude `-V` because your UNO successfully runs the flashed firmware even though read-back verification can fail on this USB-serial path.
+
+## Serial Monitor Test Output
+
+Open Serial Monitor at `115200` baud after upload. On reset, the UNO prints:
+
+```text
+UNO_READY firmware=0.3.0
+BEGIN_UNO_WIRING_TEST
+...
+END_UNO_WIRING_TEST
+STATUS armed=0 xiao_d1=... xiao_d2=... decision=SAFE
+```
+
+Every second it prints a test line:
+
+```text
+TEST_STATUS uptime_ms=... armed=0 xiao_d1=... xiao_d2=... green=1 yellow=0 red=1 detections=0 confidence=0.000 threshold=0.500 decision=SAFE
+```
+
+Expected idle result:
+
+- `decision=SAFE`
+- `green=1`
+- `yellow=0`
+- `red=1`
+- `xiao_d1` and `xiao_d2` reflect the live voltage level on UNO pins `9` and `8`
+
+Your first successful monitor run showed `xiao_d1=1`, `xiao_d2=0`, `green=1`, `yellow=0`, `red=1` and `decision=SAFE`, which is the expected idle safe state.
+
+You can type these commands into Serial Monitor with newline enabled:
+
+```text
+STATUS
+ARM_LOGIC
+DETECTION weed 0.800 0.500 0.500 0.200 0.200
+NO_DETECTION
+DISARM_LOGIC
+```
+
+After `ARM_LOGIC` and the example `DETECTION`, the expected result is `decision=DANGER`, yellow ON, green OFF and red blinking.
+
+The bench-test outcome from the first successful upload and serial monitor run is recorded in:
+
+```text
+docs/uno_logic_test_outcome_2026-07-30.md
+```
 
 ## Current Wiring
 
