@@ -85,6 +85,16 @@ def open_source(source):
     return cv2.VideoCapture(source)
 
 
+def draw_bridge_overlay(frame, command, responses, armed):
+    decision = "DANGER command sent" if command.startswith("DETECTION ") and armed else "SAFE / no active detection"
+    colour = (0, 255, 255) if decision.startswith("DANGER") else (0, 255, 0)
+    cv2.rectangle(frame, (0, 0), (frame.shape[1], 82), (0, 0, 0), -1)
+    cv2.putText(frame, decision, (12, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, colour, 2, cv2.LINE_AA)
+    cv2.putText(frame, command[:92], (12, 58), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 1, cv2.LINE_AA)
+    if responses:
+        cv2.putText(frame, responses[-1][:92], (12, 78), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1, cv2.LINE_AA)
+
+
 def main():
     args = parse_args()
     port = choose_port(args.port)
@@ -145,6 +155,7 @@ def main():
 
                 if not args.no_display:
                     annotated = result.plot()
+                    draw_bridge_overlay(annotated, command, responses, args.arm)
                     cv2.imshow("Crop Chop PC YOLO to UNO", annotated)
                     if cv2.waitKey(1) & 0xFF == ord("q"):
                         break

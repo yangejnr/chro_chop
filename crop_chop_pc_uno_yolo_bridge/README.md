@@ -116,11 +116,37 @@ python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 ```
 
+## Visual YOLO Test Before UNO
+
+Run the visual test first so you can see the image, bounding boxes, class label, confidence and FPS before involving the UNO:
+
+```bash
+.venv/bin/python pc_tools/visual_yolo_test.py --source 0 --model yolov8n.pt --imgsz 640 --conf 0.25
+```
+
+For the XIAO camera stream:
+
+```bash
+.venv/bin/python pc_tools/visual_yolo_test.py --source http://192.168.4.1/stream --model yolov8n.pt --imgsz 320 --conf 0.25
+```
+
+Press `q` to close the display window.
+
+If you bring your hand close to the camera and the display says `NO DETECTION`, the UNO will correctly remain `SAFE`. The default `yolov8n.pt` model is trained on COCO objects and does not have a dedicated `hand` class. It may detect a full person, but it should not be treated as a reliable hand detector.
+
+Save visual evidence for reports:
+
+```bash
+.venv/bin/python pc_tools/visual_yolo_test.py --source 0 --duration 30 --save-jsonl runs/visual_yolo_test.jsonl --save-video runs/visual_yolo_test.mp4
+```
+
 ## Run With PC Webcam
 
 ```bash
 .venv/bin/python pc_tools/yolo_uno_bridge.py --port /dev/ttyACM0 --source 0 --model yolov8n.pt --arm
 ```
+
+The bridge display overlays the serial command sent to the UNO and the latest UNO response. If the overlay says `NO_DETECTION`, the UNO should remain `SAFE`.
 
 ## Run With XIAO Camera Stream
 
