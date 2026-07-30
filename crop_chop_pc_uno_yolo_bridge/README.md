@@ -140,6 +140,12 @@ Save visual evidence for reports:
 .venv/bin/python pc_tools/visual_yolo_test.py --source 0 --duration 30 --save-jsonl runs/visual_yolo_test.jsonl --save-video runs/visual_yolo_test.mp4
 ```
 
+The detailed visual test procedure is documented in:
+
+```text
+docs/visual_yolo_test_procedure.md
+```
+
 ## Run With PC Webcam
 
 ```bash
