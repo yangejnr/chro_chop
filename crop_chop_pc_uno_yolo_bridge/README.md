@@ -11,14 +11,14 @@ The current UNO firmware includes a conservative three-servo bench-test mode. It
 ## Architecture
 
 ```text
-Camera or stream -> PC YOLOv8 model -> USB serial -> Arduino UNO logic
+XIAO ESP32S3 Sense camera stream -> PC YOLOv8 model -> USB serial -> Arduino UNO logic
 ```
 
-Possible PC video sources:
+The PC tools default to the XIAO camera stream:
 
-- Laptop webcam: `--source 0`
-- XIAO camera stream: `--source http://192.168.4.1/stream`
-- Video file: `--source path/to/video.mp4`
+```text
+http://192.168.4.1/stream
+```
 
 ## UNO Firmware
 
@@ -131,13 +131,7 @@ python3 -m venv .venv
 Run the visual test first so you can see the image, bounding boxes, class label, confidence and FPS before involving the UNO:
 
 ```bash
-.venv/bin/python pc_tools/visual_yolo_test.py --source 0 --model yolov8n.pt --imgsz 640 --conf 0.25
-```
-
-For the XIAO camera stream:
-
-```bash
-.venv/bin/python pc_tools/visual_yolo_test.py --source http://192.168.4.1/stream --model yolov8n.pt --imgsz 320 --conf 0.25
+.venv/bin/python pc_tools/visual_yolo_test.py --model yolov8n.pt --imgsz 320 --conf 0.25
 ```
 
 Press `q` to close the display window.
@@ -147,7 +141,7 @@ If you bring your hand close to the camera and the display says `NO DETECTION`, 
 Save visual evidence for reports:
 
 ```bash
-.venv/bin/python pc_tools/visual_yolo_test.py --source 0 --duration 30 --save-jsonl runs/visual_yolo_test.jsonl --save-video runs/visual_yolo_test.mp4
+.venv/bin/python pc_tools/visual_yolo_test.py --duration 30 --save-jsonl runs/visual_yolo_test.jsonl --save-video runs/visual_yolo_test.mp4
 ```
 
 The detailed visual test procedure is documented in:
@@ -156,26 +150,20 @@ The detailed visual test procedure is documented in:
 docs/visual_yolo_test_procedure.md
 ```
 
-## Run With PC Webcam
-
-```bash
-.venv/bin/python pc_tools/yolo_uno_bridge.py --port /dev/ttyACM0 --source 0 --model yolov8n.pt --arm
-```
-
-The bridge display overlays the serial command sent to the UNO and the latest UNO response. If the overlay says `NO_DETECTION`, the UNO should remain `SAFE`.
-
 ## Run With XIAO Camera Stream
 
 First connect the PC Wi-Fi to `CropChop-Camera-Test`, then run:
 
 ```bash
-.venv/bin/python pc_tools/yolo_uno_bridge.py --port /dev/ttyACM0 --source http://192.168.4.1/stream --model yolov8n.pt --imgsz 320 --arm
+.venv/bin/python pc_tools/yolo_uno_bridge.py --port /dev/ttyUSB0 --model yolov8n.pt --imgsz 320 --arm
 ```
+
+The bridge display overlays the serial command sent to the UNO and the latest UNO response. If the overlay says `NO_DETECTION`, the UNO should remain `SAFE`.
 
 For headless/logged testing:
 
 ```bash
-.venv/bin/python pc_tools/yolo_uno_bridge.py --port /dev/ttyACM0 --source http://192.168.4.1/stream --no-display --duration 30 --log-jsonl runs/pc_uno_yolo.jsonl
+.venv/bin/python pc_tools/yolo_uno_bridge.py --port /dev/ttyUSB0 --no-display --duration 30 --log-jsonl runs/pc_uno_yolo.jsonl
 ```
 
 If multiple serial ports are detected and `--port` is omitted, the script asks which port belongs to the UNO.

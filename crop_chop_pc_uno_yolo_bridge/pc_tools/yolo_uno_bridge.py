@@ -10,6 +10,9 @@ from serial.tools import list_ports
 from ultralytics import YOLO
 
 
+DEFAULT_XIAO_STREAM = "http://192.168.4.1/stream"
+
+
 def serial_ports():
     return [port.device for port in list_ports.comports()]
 
@@ -66,9 +69,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Run YOLO on the PC and send model decisions to an Arduino UNO.")
     parser.add_argument("--port", help="UNO serial port, for example /dev/ttyACM0 or COM3.")
     parser.add_argument("--baud", type=int, default=115200)
-    parser.add_argument("--source", default="0", help="OpenCV source: webcam index, video file, or stream URL.")
+    parser.add_argument("--source", default=DEFAULT_XIAO_STREAM, help="OpenCV source. Defaults to the XIAO ESP32S3 stream.")
     parser.add_argument("--model", default="yolov8n.pt")
-    parser.add_argument("--imgsz", type=int, default=640)
+    parser.add_argument("--imgsz", type=int, default=320)
     parser.add_argument("--conf", type=float, default=0.25)
     parser.add_argument("--uno-threshold", type=float, default=0.50)
     parser.add_argument("--send-rate-hz", type=float, default=5.0)

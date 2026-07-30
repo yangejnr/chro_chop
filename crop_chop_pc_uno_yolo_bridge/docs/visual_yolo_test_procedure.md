@@ -28,21 +28,6 @@ python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 ```
 
-## Test With PC Webcam
-
-```bash
-.venv/bin/python pc_tools/visual_yolo_test.py --source 0 --model yolov8n.pt --imgsz 640 --conf 0.25
-```
-
-Expected behaviour:
-
-- A display window opens.
-- The live camera image is visible.
-- If YOLO detects an object, bounding boxes, class labels and confidence values are shown.
-- If YOLO detects nothing, the overlay reports `NO DETECTION`.
-
-Press `q` to close the window.
-
 ## Test With XIAO Camera Stream
 
 First connect the PC Wi-Fi to the XIAO access point:
@@ -54,17 +39,26 @@ CropChop-Camera-Test
 Then run:
 
 ```bash
-.venv/bin/python pc_tools/visual_yolo_test.py --source http://192.168.4.1/stream --model yolov8n.pt --imgsz 320 --conf 0.25
+.venv/bin/python pc_tools/visual_yolo_test.py --model yolov8n.pt --imgsz 320 --conf 0.25
 ```
 
-Use `--imgsz 320` first for the XIAO stream because it is more conservative for live MJPEG testing.
+The visual test defaults to `http://192.168.4.1/stream`, so the XIAO camera is used for this project workflow.
+
+Expected behaviour:
+
+- A display window opens.
+- The live XIAO camera image is visible.
+- If YOLO detects an object, bounding boxes, class labels and confidence values are shown.
+- If YOLO detects nothing, the overlay reports `NO DETECTION`.
+
+Press `q` to close the window.
 
 ## Save Evidence
 
 To save a JSONL detection log and annotated video:
 
 ```bash
-.venv/bin/python pc_tools/visual_yolo_test.py --source 0 --duration 30 --save-jsonl runs/visual_yolo_test.jsonl --save-video runs/visual_yolo_test.mp4
+.venv/bin/python pc_tools/visual_yolo_test.py --duration 30 --save-jsonl runs/visual_yolo_test.jsonl --save-video runs/visual_yolo_test.mp4
 ```
 
 Evidence files:
@@ -101,7 +95,7 @@ To detect hands reliably, the project will need either:
 After confirming that YOLO is detecting the intended object visually, run the UNO bridge:
 
 ```bash
-.venv/bin/python pc_tools/yolo_uno_bridge.py --port /dev/ttyUSB0 --source 0 --model yolov8n.pt --arm
+.venv/bin/python pc_tools/yolo_uno_bridge.py --port /dev/ttyUSB0 --model yolov8n.pt --arm
 ```
 
 The bridge display overlays:

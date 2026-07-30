@@ -8,11 +8,14 @@ import cv2
 from ultralytics import YOLO
 
 
+DEFAULT_XIAO_STREAM = "http://192.168.4.1/stream"
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Display live YOLO detections before using the UNO bridge.")
-    parser.add_argument("--source", default="0", help="OpenCV source: webcam index, video file, or stream URL.")
+    parser.add_argument("--source", default=DEFAULT_XIAO_STREAM, help="OpenCV source. Defaults to the XIAO ESP32S3 stream.")
     parser.add_argument("--model", default="yolov8n.pt")
-    parser.add_argument("--imgsz", type=int, default=640)
+    parser.add_argument("--imgsz", type=int, default=320)
     parser.add_argument("--conf", type=float, default=0.25)
     parser.add_argument("--duration", type=float, default=0.0)
     parser.add_argument("--save-jsonl", type=Path)
