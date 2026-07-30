@@ -2,7 +2,7 @@
 
 ## Scope
 
-This protocol is for communication between the PC-side YOLO process and an Arduino UNO over USB serial. It does not drive servos, ESCs, motors or cutting hardware.
+This protocol is for communication between the PC-side YOLO process and an Arduino UNO over USB serial. It includes bounded bench-test commands for the three bus servos, but it does not control the ESC, cutting motor or cutting head.
 
 ## Serial Settings
 
@@ -21,6 +21,7 @@ SET_THRESHOLD <confidence>
 ARM_LOGIC
 DISARM_LOGIC
 STATUS
+SERVO_BAUD <baud>
 SERVO_SCAN <max_id>
 SERVO_PING <id>
 SERVO_STATUS <id>
@@ -42,6 +43,7 @@ PONG uptime_ms=<integer>
 ACK command=<name>
 STATUS armed=<0|1> xiao_d1=<0|1> xiao_d2=<0|1> detections=<integer> last_label=<label> last_confidence=<float> decision=<SAFE|DANGER>
 TEST_STATUS uptime_ms=<integer> armed=<0|1> xiao_d1=<0|1> xiao_d2=<0|1> green=<0|1> yellow=<0|1> red=<0|1> detections=<integer> confidence=<float> threshold=<float> decision=<SAFE|DANGER>
+SERVO_BAUD baud=<integer> ok=1
 SERVO_SCAN_BEGIN max_id=<integer>
 SERVO_FOUND id=<integer>
 SERVO_SCAN_END
@@ -82,5 +84,7 @@ Use current-limiting resistors for all LEDs. Connect XIAO GND, UNO GND and the L
 | Driver `GND` | `GND` | Common reference |
 
 For UNO control, the bus servo adapter jumper must be in `A` / UART mode. Jumper `B` is USB-control mode and should be used only when the adapter is connected directly to the PC by USB.
+
+`SERVO_BAUD` accepts `1000000`, `500000`, `250000`, `115200` or `57600`. It changes the UNO-to-servo-driver bus rate only; the PC-to-UNO USB serial baud remains `115200`.
 
 `SERVO_MOVE_SAFE` is rejected unless logic is armed. Accepted positions are restricted to `1800` to `2300`, and accepted speeds are restricted to `1` to `300`.

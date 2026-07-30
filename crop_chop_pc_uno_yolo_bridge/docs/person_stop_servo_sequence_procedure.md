@@ -62,13 +62,14 @@ env PLATFORMIO_CORE_DIR=/home/henry/crop-chop/crop_chop_xiao_camera_test/.pio_co
 Run:
 
 ```text
+SERVO_BAUD 1000000
 SERVO_SCAN 20
 SERVO_STATUS 1
 SERVO_STATUS 2
 SERVO_STATUS 3
 ```
 
-Do not run the sequence until all expected servos are found and status reads succeed.
+If `SERVO_SCAN` finds no servos, run `pc_tools/servo_bus_diagnostic.py` first because it tests the common servo-bus baud rates automatically. Do not run the sequence until all expected servos are found and status reads succeed.
 
 ## Step 3: Run Sequential Servo Test With Person Stop
 
@@ -79,11 +80,13 @@ Run:
 ```bash
 MPLCONFIGDIR=/tmp .venv/bin/python pc_tools/yolo_uno_bridge.py \
   --port /dev/ttyUSB0 \
+  --source 0 \
   --model yolov8n.pt \
   --imgsz 320 \
   --conf 0.25 \
   --servo-sequence \
   --servo-ids 1,2,3 \
+  --servo-baud 1000000 \
   --servo-positions 1900,2048,2200 \
   --servo-speed 100 \
   --servo-step-interval 1.5 \
@@ -92,7 +95,7 @@ MPLCONFIGDIR=/tmp .venv/bin/python pc_tools/yolo_uno_bridge.py \
   --log-csv runs/person_stop_servo_sequence.csv
 ```
 
-The bridge defaults to the XIAO stream:
+For this bench test, `--source 0` uses the laptop camera. Without `--source 0`, the bridge defaults to the XIAO stream:
 
 ```text
 http://192.168.4.1/stream
@@ -170,6 +173,7 @@ Interpretation:
 
 - If `SERVO_TORQUE ... ok=0`, the UNO is not communicating with that servo ID.
 - If `SERVO_MOVE_SAFE ... ok=0`, the servo command was sent but the bus did not acknowledge it.
+- If every servo command reports `ok=0`, treat this as a servo-bus problem: adapter jumper mode, RX/TX labeling, common ground, servo power, servo IDs or bus baud rate.
 - If no `SERVO_MOVE_SAFE` commands appear, the camera probably detected `person` immediately and stopped before movement.
 - If commands show `ok=1` but there is no movement, check servo power, torque state, mechanical binding and whether the target position is too close to the current position.
 
@@ -184,6 +188,7 @@ MPLCONFIGDIR=/tmp .venv/bin/python pc_tools/yolo_uno_bridge.py \
   --conf 0.25 \
   --servo-sequence \
   --servo-ids 1,2,3 \
+  --servo-baud 1000000 \
   --servo-positions 1900,2048,2200 \
   --servo-speed 100 \
   --servo-step-interval 1.5 \

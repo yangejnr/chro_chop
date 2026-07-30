@@ -122,6 +122,7 @@ def parse_args():
     parser.add_argument("--arm", action="store_true", help="Arm UNO logic after connecting. Still does not drive actuators.")
     parser.add_argument("--servo-sequence", action="store_true", help="Sequentially move configured servos until a person is detected.")
     parser.add_argument("--servo-ids", default=DEFAULT_SERVO_IDS, help="Comma-separated servo IDs for sequence mode.")
+    parser.add_argument("--servo-baud", type=int, default=1000000, help="UNO-to-servo-driver bus baud for sequence mode.")
     parser.add_argument("--servo-positions", default=DEFAULT_SERVO_POSITIONS, help="Comma-separated safe positions for each servo step.")
     parser.add_argument("--servo-speed", type=int, default=100)
     parser.add_argument("--servo-step-interval", type=float, default=1.5)
@@ -187,6 +188,8 @@ def main():
 
     servo_ids = parse_int_list(args.servo_ids, "servo IDs")
     servo_positions = parse_int_list(args.servo_positions, "servo positions")
+    if args.servo_baud not in {1000000, 500000, 250000, 115200, 57600}:
+        raise SystemExit("--servo-baud must be one of: 1000000, 500000, 250000, 115200, 57600")
     send_interval = 1.0 / args.send_rate_hz if args.send_rate_hz > 0 else 0.2
     last_send = 0.0
     last_servo_step = 0.0
@@ -200,6 +203,8 @@ def main():
         send_command(connection, "HELLO")
         send_command(connection, f"SET_THRESHOLD {args.uno_threshold:.3f}")
         should_arm = args.arm or args.servo_sequence
+        if args.servo_sequence:
+            send_command(connection, f"SERVO_BAUD {args.servo_baud}")
         send_command(connection, "ARM_LOGIC" if should_arm else "DISARM_LOGIC")
         if args.servo_sequence and not args.skip_servo_torque_enable:
             for servo_id in servo_ids:

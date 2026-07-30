@@ -175,7 +175,7 @@ If multiple serial ports are detected and `--port` is omitted, the script asks w
 After confirming the XIAO stream and servo IDs, run:
 
 ```bash
-MPLCONFIGDIR=/tmp .venv/bin/python pc_tools/yolo_uno_bridge.py --port /dev/ttyUSB0 --model yolov8n.pt --imgsz 320 --conf 0.25 --servo-sequence --servo-ids 1,2,3 --servo-positions 1900,2048,2200 --servo-speed 100 --servo-step-interval 1.5 --stop-class person --log-jsonl runs/person_stop_servo_sequence.jsonl --log-csv runs/person_stop_servo_sequence.csv
+MPLCONFIGDIR=/tmp .venv/bin/python pc_tools/yolo_uno_bridge.py --port /dev/ttyUSB0 --source 0 --model yolov8n.pt --imgsz 320 --conf 0.25 --servo-sequence --servo-ids 1,2,3 --servo-baud 1000000 --servo-positions 1900,2048,2200 --servo-speed 100 --servo-step-interval 1.5 --stop-class person --log-jsonl runs/person_stop_servo_sequence.jsonl --log-csv runs/person_stop_servo_sequence.csv
 ```
 
 This mode enables servo torque, moves the configured servos sequentially with bounded `SERVO_MOVE_SAFE` commands, and prints each serial command with `>>` plus each UNO response with `<<`. When YOLO detects `person`, the PC sends torque-off commands for the configured servos, disarms the UNO and logs `event=stop_person_detected`.
@@ -191,10 +191,17 @@ docs/person_stop_servo_sequence_procedure.md
 If servos do not move during the YOLO sequence, test the servo bus without camera inference:
 
 ```bash
-MPLCONFIGDIR=/tmp .venv/bin/python pc_tools/servo_bus_diagnostic.py --port /dev/ttyUSB0 --servo-ids 1,2,3 --position-a 1900 --position-b 2200 --speed 100 --cycles 1
+MPLCONFIGDIR=/tmp .venv/bin/python pc_tools/servo_bus_diagnostic.py \
+  --port /dev/ttyUSB0 \
+  --servo-ids 1,2,3 \
+  --servo-bauds 1000000,115200,500000,250000,57600 \
+  --position-a 1900 \
+  --position-b 2200 \
+  --speed 100 \
+  --cycles 1
 ```
 
-This script sends `SERVO_SCAN`, `SERVO_PING`, `SERVO_STATUS`, torque-enable and bounded move commands directly to the UNO, then logs responses to:
+This script tests common servo-bus baud rates with `SERVO_BAUD`, `SERVO_SCAN`, `SERVO_PING` and `SERVO_STATUS`. It sends torque-enable and bounded move commands only after a servo acknowledges, then logs responses to:
 
 ```text
 runs/servo_bus_diagnostic.csv

@@ -48,7 +48,7 @@ If `SERVO_SCAN` finds no servos:
 - confirm adapter `RX` goes to UNO `D2` and adapter `TX` goes to UNO `D3`,
 - confirm common ground,
 - confirm servo power,
-- confirm the servo bus baud rate,
+- test the common servo bus baud rates with the PC diagnostic script,
 - consider using a board with an extra hardware UART, such as Arduino Mega, for reliable servo bus communication.
 
 ## Upload Firmware
@@ -67,15 +67,28 @@ env PLATFORMIO_CORE_DIR=/home/henry/crop-chop/crop_chop_xiao_camera_test/.pio_co
 Expected startup includes:
 
 ```text
-UNO_READY firmware=0.4.0
+UNO_READY firmware=0.5.0
 servo_bus_rx_pin=2
 servo_bus_tx_pin=3
+servo_bus_baud=1000000
 servo_protocol=Feetech_STS_SMS_serial_bus_assumed
 ```
 
 ## Non-Motion Tests
 
 Type commands in Serial Monitor with newline enabled.
+
+Select the servo bus baud rate:
+
+```text
+SERVO_BAUD 1000000
+```
+
+Expected response:
+
+```text
+SERVO_BAUD baud=1000000 ok=1
+```
 
 Scan common IDs:
 
@@ -178,4 +191,6 @@ cd /home/henry/crop-chop/crop_chop_pc_uno_yolo_bridge
 MPLCONFIGDIR=/tmp .venv/bin/python pc_tools/servo_bus_diagnostic.py --port /dev/ttyUSB0 --servo-ids 1,2,3 --position-a 1900 --position-b 2200 --speed 100 --cycles 1
 ```
 
-If the output shows `NO_RESPONSE` or `ok=0`, focus on servo bus wiring, common ground, servo power, servo IDs and bus baud rate before returning to the camera/YOLO sequence.
+The script tests `1000000`, `115200`, `500000`, `250000` and `57600` servo-bus baud rates before any movement command. If no servo acknowledges, it skips torque and movement commands for safety.
+
+If the output shows `No servo acknowledgement found at tested baud rates`, focus on adapter jumper mode, RX/TX labeling, common ground, servo power and servo IDs before returning to the camera/YOLO sequence.

@@ -1,7 +1,7 @@
 #include <SoftwareSerial.h>
 
 const unsigned long BAUD_RATE = 115200;
-const char *FIRMWARE_VERSION = "0.4.0";
+const char *FIRMWARE_VERSION = "0.5.0";
 const size_t LINE_BUFFER_SIZE = 96;
 const unsigned long DANGER_BLINK_INTERVAL_MS = 250;
 const unsigned long SERIAL_STATUS_INTERVAL_MS = 1000;
@@ -43,6 +43,7 @@ float lastHeight = 0.0;
 unsigned long lastBlinkMs = 0;
 bool redBlinkState = false;
 unsigned long lastSerialStatusMs = 0;
+unsigned long servoBusBaud = 1000000;
 SoftwareSerial servoBus(SERVO_BUS_RX_PIN, SERVO_BUS_TX_PIN);
 
 void sendReady() {
@@ -61,6 +62,8 @@ void sendStartupReport() {
   Serial.println(SERVO_BUS_RX_PIN);
   Serial.print("servo_bus_tx_pin=");
   Serial.println(SERVO_BUS_TX_PIN);
+  Serial.print("servo_bus_baud=");
+  Serial.println(servoBusBaud);
   Serial.println("servo_protocol=Feetech_STS_SMS_serial_bus_assumed");
   Serial.print("xiao_d1_input_pin=");
   Serial.println(XIAO_D1_INPUT_PIN);
@@ -72,7 +75,7 @@ void sendStartupReport() {
   Serial.println(YELLOW_DANGER_LED_PIN);
   Serial.print("red_power_danger_led_pin=");
   Serial.println(RED_POWER_DANGER_LED_PIN);
-  Serial.println("commands=HELLO,PING,STATUS,ARM_LOGIC,DISARM_LOGIC,NO_DETECTION,SET_THRESHOLD,DETECTION,SERVO_SCAN,SERVO_PING,SERVO_STATUS,SERVO_TORQUE,SERVO_MOVE_SAFE");
+  Serial.println("commands=HELLO,PING,STATUS,ARM_LOGIC,DISARM_LOGIC,NO_DETECTION,SET_THRESHOLD,DETECTION,SERVO_BAUD,SERVO_SCAN,SERVO_PING,SERVO_STATUS,SERVO_TORQUE,SERVO_MOVE_SAFE");
   Serial.println("END_UNO_WIRING_TEST");
 }
 
@@ -214,6 +217,26 @@ bool servoWriteMove(byte id, int position, int speed) {
   servoFlushInput();
   servoWritePacket(id, SERVO_INST_WRITE, paramsOut, 7);
   return servoReadReply(id, &error, paramsIn, &paramCount, sizeof(paramsIn)) && error == 0;
+}
+
+bool isSupportedServoBaud(unsigned long baud) {
+  return baud == 1000000 || baud == 500000 || baud == 250000 || baud == 115200 || baud == 57600;
+}
+
+void handleServoBaud(char *payload) {
+  unsigned long baud = strtoul(payload, nullptr, 10);
+  if (!isSupportedServoBaud(baud)) {
+    sendError("bad_servo_baud");
+    return;
+  }
+  servoBus.end();
+  delay(20);
+  servoBus.begin(baud);
+  servoBusBaud = baud;
+  servoFlushInput();
+  Serial.print("SERVO_BAUD baud=");
+  Serial.print(servoBusBaud);
+  Serial.println(" ok=1");
 }
 
 void handleServoScan(char *payload) {
@@ -455,6 +478,10 @@ void handleCommand(char *line) {
     handleSetThreshold(line + 14);
     return;
   }
+  if (strncmp(line, "SERVO_BAUD ", 11) == 0) {
+    handleServoBaud(line + 11);
+    return;
+  }
   if (strncmp(line, "SERVO_SCAN", 10) == 0) {
     handleServoScan(line + 10);
     return;
@@ -509,7 +536,7 @@ void setup() {
   pinMode(YELLOW_DANGER_LED_PIN, OUTPUT);
   pinMode(RED_POWER_DANGER_LED_PIN, OUTPUT);
   Serial.begin(BAUD_RATE);
-  servoBus.begin(1000000);
+  servoBus.begin(servoBusBaud);
   clearDetection();
   updateStatusLeds();
   sendReady();
