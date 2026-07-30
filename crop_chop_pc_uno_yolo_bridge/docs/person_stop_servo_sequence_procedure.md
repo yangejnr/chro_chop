@@ -28,11 +28,11 @@ The PC controls sequencing because it has the live image-detection context. The 
 
 | Bus servo adapter | Arduino UNO |
 | --- | ---: |
-| `TX` | `D2` software RX |
-| `RX` | `D3` software TX |
+| `RX` with jumper `A` | `D2` software RX |
+| `TX` with jumper `A` | `D3` software TX |
 | `GND` | `GND` |
 
-Serial is crossed: adapter `TX` goes to UNO receive, and adapter `RX` goes to UNO transmit.
+The adapter jumper must be in `A` / UART mode for UNO control. If the jumper is in `B`, the adapter is in USB-control mode and the UNO will not move the servos through `D2`/`D3`.
 
 ## Step 1: Confirm XIAO Camera View
 

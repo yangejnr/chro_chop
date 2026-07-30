@@ -22,11 +22,13 @@ The firmware uses SoftwareSerial for the servo driver:
 
 | Servo driver signal | UNO pin |
 | --- | ---: |
-| Driver `TX` | UNO `D2` / software RX |
-| Driver `RX` | UNO `D3` / software TX |
+| Driver `RX` | UNO `D2` / software RX |
+| Driver `TX` | UNO `D3` / software TX |
 | Driver `GND` | UNO `GND` |
 
-Serial must be crossed: driver `TX` goes to UNO receive, and driver `RX` goes to UNO transmit.
+For UNO UART control, the bus servo adapter jumper must be in `A` mode. The adapter documentation labels the UART pins from the adapter side, so use `RX` to UNO software RX and `TX` to UNO software TX for this board.
+
+If the jumper is in `B` mode, the adapter is configured for USB control. In that mode, the UNO UART pins will not control the servos; connect the adapter directly to the PC by USB instead.
 
 ## Power Safety
 
@@ -42,7 +44,8 @@ Many STS3215/Feetech bus servos use `1000000` baud by default. Arduino UNO `Soft
 
 If `SERVO_SCAN` finds no servos:
 
-- confirm `TX`/`RX` are crossed,
+- confirm the adapter jumper is in `A` mode for UNO UART control,
+- confirm adapter `RX` goes to UNO `D2` and adapter `TX` goes to UNO `D3`,
 - confirm common ground,
 - confirm servo power,
 - confirm the servo bus baud rate,

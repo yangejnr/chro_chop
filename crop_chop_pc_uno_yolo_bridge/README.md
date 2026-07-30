@@ -100,8 +100,8 @@ docs/uno_logic_test_outcome_2026-07-30.md
 
 | Connection | UNO pin |
 | --- | ---: |
-| Servo driver `TX` | `2` |
-| Servo driver `RX` | `3` |
+| Servo driver `RX` with adapter jumper `A` | `2` software RX |
+| Servo driver `TX` with adapter jumper `A` | `3` software TX |
 | XIAO `D1` | `9` |
 | XIAO `D2` | `8` |
 | Green LED | `7` |
@@ -110,7 +110,9 @@ docs/uno_logic_test_outcome_2026-07-30.md
 
 Use current-limiting resistors for all LEDs, typically `220` to `330` ohms. XIAO GND and UNO GND must be connected if the XIAO signal wires are connected.
 
-For servo tests, also connect servo driver GND to UNO GND and power the servos from the servo driver/external supply, not from the UNO. The detailed servo procedure is in:
+For servo tests through the UNO, the bus servo adapter jumper must be in `A` / UART mode. If the jumper is in `B`, the adapter is in USB-control mode and the UNO pins will not control the servos. In `B` mode, connect the adapter directly to the PC by USB and use a PC-side servo controller instead.
+
+Also connect servo driver GND to UNO GND and power the servos from the servo driver/external supply, not from the UNO. The detailed servo procedure is in:
 
 ```text
 docs/servo_bench_test_procedure.md

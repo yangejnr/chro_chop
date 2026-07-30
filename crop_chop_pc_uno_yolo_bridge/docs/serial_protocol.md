@@ -77,8 +77,10 @@ Use current-limiting resistors for all LEDs. Connect XIAO GND, UNO GND and the L
 
 | Servo driver signal | UNO pin | Direction |
 | --- | ---: | --- |
-| Driver `TX` | `D2` | Input to UNO software serial RX |
-| Driver `RX` | `D3` | Output from UNO software serial TX |
+| Driver `RX` with jumper `A` | `D2` | UNO software serial RX |
+| Driver `TX` with jumper `A` | `D3` | UNO software serial TX |
 | Driver `GND` | `GND` | Common reference |
+
+For UNO control, the bus servo adapter jumper must be in `A` / UART mode. Jumper `B` is USB-control mode and should be used only when the adapter is connected directly to the PC by USB.
 
 `SERVO_MOVE_SAFE` is rejected unless logic is armed. Accepted positions are restricted to `1800` to `2300`, and accepted speeds are restricted to `1` to `300`.
