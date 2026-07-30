@@ -5,4 +5,7 @@ __pycache__/
 .pio_core/
 runs/*.jsonl
 runs/*.mp4
+**/runs/*.csv
+**/runs/*.jsonl
+**/runs/*.mp4
 *.pt
