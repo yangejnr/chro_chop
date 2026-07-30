@@ -165,3 +165,14 @@ For each servo, record:
 - any abnormal noise, heat, twitching or communication failure.
 
 Do not claim servo control success unless the serial response and physical movement were both observed.
+
+## PC Diagnostic Script
+
+To run the same checks from the PC without YOLO:
+
+```bash
+cd /home/henry/crop-chop/crop_chop_pc_uno_yolo_bridge
+MPLCONFIGDIR=/tmp .venv/bin/python pc_tools/servo_bus_diagnostic.py --port /dev/ttyUSB0 --servo-ids 1,2,3 --position-a 1900 --position-b 2200 --speed 100 --cycles 1
+```
+
+If the output shows `NO_RESPONSE` or `ok=0`, focus on servo bus wiring, common ground, servo power, servo IDs and bus baud rate before returning to the camera/YOLO sequence.

@@ -184,6 +184,20 @@ Detailed procedure:
 docs/person_stop_servo_sequence_procedure.md
 ```
 
+## Direct Servo Diagnostic
+
+If servos do not move during the YOLO sequence, test the servo bus without camera inference:
+
+```bash
+MPLCONFIGDIR=/tmp .venv/bin/python pc_tools/servo_bus_diagnostic.py --port /dev/ttyUSB0 --servo-ids 1,2,3 --position-a 1900 --position-b 2200 --speed 100 --cycles 1
+```
+
+This script sends `SERVO_SCAN`, `SERVO_PING`, `SERVO_STATUS`, torque-enable and bounded move commands directly to the UNO, then logs responses to:
+
+```text
+runs/servo_bus_diagnostic.csv
+```
+
 ## Safety Defaults
 
 - UNO starts disarmed.
