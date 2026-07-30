@@ -21,6 +21,11 @@ SET_THRESHOLD <confidence>
 ARM_LOGIC
 DISARM_LOGIC
 STATUS
+SERVO_SCAN <max_id>
+SERVO_PING <id>
+SERVO_STATUS <id>
+SERVO_TORQUE <id> <0|1>
+SERVO_MOVE_SAFE <id> <position> <speed>
 ```
 
 Field meanings:
@@ -37,6 +42,13 @@ PONG uptime_ms=<integer>
 ACK command=<name>
 STATUS armed=<0|1> xiao_d1=<0|1> xiao_d2=<0|1> detections=<integer> last_label=<label> last_confidence=<float> decision=<SAFE|DANGER>
 TEST_STATUS uptime_ms=<integer> armed=<0|1> xiao_d1=<0|1> xiao_d2=<0|1> green=<0|1> yellow=<0|1> red=<0|1> detections=<integer> confidence=<float> threshold=<float> decision=<SAFE|DANGER>
+SERVO_SCAN_BEGIN max_id=<integer>
+SERVO_FOUND id=<integer>
+SERVO_SCAN_END
+SERVO_PING id=<integer> ok=<0|1>
+SERVO_STATUS id=<integer> ok=<0|1> position=<integer>
+SERVO_TORQUE id=<integer> enable=<0|1> ok=<0|1>
+SERVO_MOVE_SAFE id=<integer> position=<integer> speed=<integer> ok=<0|1>
 ERROR code=<name>
 ```
 
@@ -60,3 +72,13 @@ This is intentionally conservative. Later actuator code should be added only aft
 | Red LED | `5` | Output from UNO | Steady ON for power/status, blinking during `DANGER` |
 
 Use current-limiting resistors for all LEDs. Connect XIAO GND, UNO GND and the LED ground rail together.
+
+## Servo Bus Wiring
+
+| Servo driver signal | UNO pin | Direction |
+| --- | ---: | --- |
+| Driver `TX` | `D2` | Input to UNO software serial RX |
+| Driver `RX` | `D3` | Output from UNO software serial TX |
+| Driver `GND` | `GND` | Common reference |
+
+`SERVO_MOVE_SAFE` is rejected unless logic is armed. Accepted positions are restricted to `1800` to `2300`, and accepted speeds are restricted to `1` to `300`.

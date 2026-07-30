@@ -4,7 +4,9 @@ This project moves the YOLO model back to the PC and uses an Arduino UNO for sim
 
 The UNO does not run YOLO. The PC runs inference, converts the best detection into a compact serial command, and the UNO records the state and returns a logic decision.
 
-No servos, ESCs, motors or cutting hardware are controlled by this code.
+No ESCs, brushless motors or cutting hardware are controlled by this code. Servo control is limited to explicit bench-test commands with bounded position and speed limits.
+
+The current UNO firmware includes a conservative three-servo bench-test mode. It starts with scan/status commands and only permits bounded movement through explicit serial commands.
 
 ## Architecture
 
@@ -53,7 +55,7 @@ Use `/dev/ttyACM0` instead if the UNO appears as an Arduino USB CDC device. This
 Open Serial Monitor at `115200` baud after upload. On reset, the UNO prints:
 
 ```text
-UNO_READY firmware=0.3.0
+UNO_READY firmware=0.4.0
 BEGIN_UNO_WIRING_TEST
 ...
 END_UNO_WIRING_TEST
@@ -98,6 +100,8 @@ docs/uno_logic_test_outcome_2026-07-30.md
 
 | Connection | UNO pin |
 | --- | ---: |
+| Servo driver `TX` | `2` |
+| Servo driver `RX` | `3` |
 | XIAO `D1` | `9` |
 | XIAO `D2` | `8` |
 | Green LED | `7` |
@@ -105,6 +109,12 @@ docs/uno_logic_test_outcome_2026-07-30.md
 | Red LED | `5` |
 
 Use current-limiting resistors for all LEDs, typically `220` to `330` ohms. XIAO GND and UNO GND must be connected if the XIAO signal wires are connected.
+
+For servo tests, also connect servo driver GND to UNO GND and power the servos from the servo driver/external supply, not from the UNO. The detailed servo procedure is in:
+
+```text
+docs/servo_bench_test_procedure.md
+```
 
 ## PC Setup
 
