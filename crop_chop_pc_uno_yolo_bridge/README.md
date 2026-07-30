@@ -188,6 +188,19 @@ docs/person_stop_servo_sequence_procedure.md
 
 ## Direct Servo Diagnostic
 
+Upload the UNO firmware and run the servo diagnostic in one command:
+
+```bash
+cd /home/henry/crop-chop/crop_chop_pc_uno_yolo_bridge
+scripts/upload_and_test_uno.sh --port /dev/ttyUSB0
+```
+
+If the UNO appears as `/dev/ttyACM0`, use:
+
+```bash
+scripts/upload_and_test_uno.sh --port /dev/ttyACM0
+```
+
 If servos do not move during the YOLO sequence, test the servo bus without camera inference:
 
 ```bash

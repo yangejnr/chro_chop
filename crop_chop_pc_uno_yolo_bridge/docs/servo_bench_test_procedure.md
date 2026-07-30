@@ -53,6 +53,21 @@ If `SERVO_SCAN` finds no servos:
 
 ## Upload Firmware
 
+Recommended one-command upload and diagnostic:
+
+```bash
+cd /home/henry/crop-chop/crop_chop_pc_uno_yolo_bridge
+scripts/upload_and_test_uno.sh --port /dev/ttyUSB0
+```
+
+If the UNO appears as `/dev/ttyACM0`, change the port:
+
+```bash
+scripts/upload_and_test_uno.sh --port /dev/ttyACM0
+```
+
+Manual upload only:
+
 ```bash
 cd /home/henry/crop-chop/crop_chop_pc_uno_yolo_bridge
 env PLATFORMIO_CORE_DIR=/home/henry/crop-chop/crop_chop_xiao_camera_test/.pio_core ../crop_chop_xiao_camera_test/.venv/bin/pio run --target upload --upload-port /dev/ttyUSB0
