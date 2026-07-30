@@ -168,6 +168,22 @@ For headless/logged testing:
 
 If multiple serial ports are detected and `--port` is omitted, the script asks which port belongs to the UNO.
 
+## Sequential Servo Test With Person Stop
+
+After confirming the XIAO stream and servo IDs, run:
+
+```bash
+MPLCONFIGDIR=/tmp .venv/bin/python pc_tools/yolo_uno_bridge.py --port /dev/ttyUSB0 --model yolov8n.pt --imgsz 320 --conf 0.25 --servo-sequence --servo-ids 1,2,3 --servo-positions 1900,2048,2200 --servo-speed 100 --servo-step-interval 1.5 --stop-class person --log-jsonl runs/person_stop_servo_sequence.jsonl --log-csv runs/person_stop_servo_sequence.csv
+```
+
+This mode moves the configured servos sequentially with bounded `SERVO_MOVE_SAFE` commands. When YOLO detects `person`, the PC sends torque-off commands for the configured servos, disarms the UNO and logs `event=stop_person_detected`.
+
+Detailed procedure:
+
+```text
+docs/person_stop_servo_sequence_procedure.md
+```
+
 ## Safety Defaults
 
 - UNO starts disarmed.
